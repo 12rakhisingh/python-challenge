@@ -1,6 +1,7 @@
 # Import the necessary dependencies for project
 import os
 import csv
+import collections
 
 # Read the resource file
 # csv_file = os.path.join("/Users/msk/Desktop/Project/DataCourse/python-challenge/PyBank/Resources", "budget_data.csv")
@@ -15,9 +16,8 @@ csv_file = os.path.join(find_folder,"Resources", "election_data.csv")
 # Declare variables
 count_votes = 0
 total_amount = 0
-previous_profit_loss_change = 0 
-profit_loss_change = []
-profit_loss_change_month = {}
+candidates = set()
+candidate_vote_details = collections.Counter()
 
 
 # open budget data csv file
@@ -26,7 +26,7 @@ with open(csv_file, 'r') as csv_file:
 
     # Read the header row first (skip this part if there is no header)
     csv_header = next(csv_file)
-    print(f"Header: {csv_header}")
+    # print(f"Header: {csv_header}")
 
     # Read through each row of data after the header
     for row in csv_reader:
@@ -39,16 +39,16 @@ with open(csv_file, 'r') as csv_file:
         # get candidate name 
         candidate_name = row[2]
 
+        # add candidate in set https://docs.python.org/3/tutorial/datastructures.html#:~:text=and%20sequence%20unpacking.-,5.4.%20Sets%C2%B6,-Python%20also%20includes
+        candidates.add(candidate_name)
 
-    
+        # use counter to count the votes. A counter tool is provided to support convenient and rapid tallies.
+        # https://docs.python.org/3/library/collections.html#collections.Counter:~:text=A%20counter%20tool%20is%20provided%20to%20support%20convenient%20and%20rapid%20tallies.%20For%20example%3A
+        # refer example to understand counters
+        candidate_vote_details[candidate_name] += 1
 
-
-
-    print("Election Results")
-    print("-------------------------")
-    print(f'Total Votes: ' + str(count_votes) )
-    print("-------------------------")
-
+        # find the election winnder
+        election_winner = max(candidate_vote_details, key=candidate_vote_details.get)
 
 
 
@@ -57,16 +57,46 @@ data_output = os.path.join(find_folder,"analysis", "election_data_analysis.txt")
 
 #  Open the analysis file where you will store the results
 with open(data_output, "w", newline='') as datafile:
-    writer = csv.writer(datafile)
 
-    # Write the header row
+
+    print("Election Results")
+    print("-------------------------")
+    print(f'Total Votes: ' + str(count_votes) )
+    print("-------------------------")
+    # print(candidate_vote_details)
+
+    # Write date to the file 
     datafile.write("Election Results\n")
-    # writer.writerow(["Election Results"])
     datafile.write("-------------------------\n")
-    # writer.writerow(["-------------------------"])
-
     datafile.write("Total Votes: "+str(count_votes)+"\n")
-    # writer.writerow(["Total Votes: ",str(count_votes)])
     datafile.write("-------------------------\n")
-    # writer.writerow(["-------------------------"])
+
+    for candidate, candidate_total_vote in candidate_vote_details.items():
+        # print(candidate, candidate_total_vote)
+        # Calculate the percentrage votes
+        candidate_percent_vote = round((candidate_total_vote/count_votes) * 100, 3)
+
+        #Print the candidate details - name, percent votes, total candidate votes
+        print(candidate+": "+str(candidate_percent_vote)+"% ("+str(candidate_total_vote)+")")
+        
+        # write the same details to file as well 
+        datafile.write(candidate+": "+str(candidate_percent_vote)+"% ("+str(candidate_total_vote)+")\n")
+    
+    print("-------------------------")
+    #Print the Winner
+    print("Winner: "+str(election_winner))
+    print("-------------------------")
+
+    # Write winner details to the analysis file
+    datafile.write("-------------------------\n")
+    datafile.write("Winner: "+str(election_winner)+"\n")
+    datafile.write("-------------------------\n")
+
+
+
+
+    
+
+    
+    
 
